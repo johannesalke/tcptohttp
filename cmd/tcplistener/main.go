@@ -1,4 +1,4 @@
-package tcplistener
+package main
 
 import (
 	"fmt"
