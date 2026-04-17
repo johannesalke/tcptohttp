@@ -35,7 +35,7 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 	go func() {
 		for {
 			n, err := f.Read(slice)
-			if n == 0 {
+			if n == 0 || err == io.EOF {
 				ch <- str
 				close(ch)
 				f.Close()
