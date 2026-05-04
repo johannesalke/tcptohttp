@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"io"
+	//"io"
 	"net"
-	"strings"
+	//"strings"
+	"github.com/johannesalke/tcptohttp/internal/request"
 )
 
 func main() {
@@ -16,17 +17,25 @@ func main() {
 		connection, err := listener.Accept()
 		rr("Error accepting connection: ", err)
 		fmt.Println("Connection accepted!")
-		ch := getLinesChannel(connection)
-		for line := range ch {
-			fmt.Printf("read: %s\n", line)
+		request, err := request.RequestFromReader(connection)
+		if err != nil {
+			fmt.Printf("Error: %e", err)
+			return
 		}
+		fmt.Printf("Request line:\n- Method: %s\n- Target: %s\n- Version: %s\n", request.RequestLine.Method, request.RequestLine.RequestTarget, request.RequestLine.HttpVersion)
+
+		/*
+			ch := getLinesChannel(connection)
+			for line := range ch {
+				fmt.Printf("read: %s\n", line)
+			}*/
 		fmt.Println("Connection closed!")
 
 	}
 
 }
 
-func getLinesChannel(f io.ReadCloser) <-chan string {
+/*func getLinesChannel(f io.ReadCloser) <-chan string {
 	ch := make(chan string)
 	slice := make([]byte, 8)
 	var str string
@@ -54,7 +63,7 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 		}
 	}()
 	return ch
-}
+}*/
 
 func rr(message string, err error) {
 	if err != nil {
