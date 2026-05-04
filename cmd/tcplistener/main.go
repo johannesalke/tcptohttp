@@ -23,7 +23,14 @@ func main() {
 			return
 		}
 		fmt.Printf("Request line:\n- Method: %s\n- Target: %s\n- Version: %s\n", request.RequestLine.Method, request.RequestLine.RequestTarget, request.RequestLine.HttpVersion)
-
+		fmt.Println("Headers:")
+		for k, v := range request.Headers {
+			fmt.Printf("- %s: %s\n", k, v)
+		}
+		if request.Body != nil {
+			fmt.Println("Body:")
+			fmt.Println(string(request.Body))
+		}
 		/*
 			ch := getLinesChannel(connection)
 			for line := range ch {

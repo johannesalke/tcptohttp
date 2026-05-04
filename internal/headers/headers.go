@@ -14,17 +14,20 @@ func NewHeaders() Headers {
 }
 
 func (h Headers) Parse(data []byte) (n int, done bool, err error) {
-	if bytes.Equal(data[0:2], []byte("\r\n")) { //Triggers when a line is empty, which signals the end of the headers section
-		return 0, true, nil
-	}
+	/*if bytes.Equal(data[0:2], []byte("\r\n")) { //Triggers when a line is empty, which signals the end of the headers section
+		return 2, true, nil
+	}*/
 	if !bytes.Contains(data, []byte("\r\n")) { //Triggers when there is not enough material for parsing a full line.
 		return 0, false, nil
 	}
 	index := bytes.Index(data, []byte("\r\n"))
+	if index == 0 {
+		return 2, true, nil
+	}
 
 	name, content, err := parseHeader(string(data[:index]))
 	if err != nil {
-		return 0, false, fmt.Errorf("Error parsing request line: %e", err)
+		return 0, false, err
 	}
 	for _, c := range name {
 		if !validateChar(byte(c)) {
@@ -38,12 +41,13 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 		h[strings.ToLower(name)] = currentContents + ", " + content
 	}
 
-	fmt.Println("You shouldn't be here")
+	//fmt.Println("You shouldn't be here")
 	return index + 2, false, nil
 }
 
 func parseHeader(data string) (name string, value string, err error) {
 	sections := strings.SplitN(data, ":", 2)
+	//fmt.Println("Log: ", sections[0])
 	if strings.Contains(sections[0], " ") {
 		return "", "", fmt.Errorf("Malformed header: Whitespace in field-name")
 	}
@@ -68,4 +72,12 @@ func validateChar(c byte) (valid bool) {
 	}
 	return false
 
+}
+
+func (h Headers) Get(key string) string {
+	return h[strings.ToLower(key)]
+}
+
+func (h Headers) Set(key, value string) {
+	h[strings.ToLower(key)] = value
 }

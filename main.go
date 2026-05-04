@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/johannesalke/tcptohttp/internal/headers"
 	"strings"
 )
 
@@ -15,5 +16,11 @@ func main() {
 	if testResult == "" {
 		fmt.Println("Correct!")
 	}
-	fmt.Print(testResult == "")
+	fmt.Println(testResult == "")
+	h := headers.NewHeaders()
+	h["test"] = "This"
+	fmt.Println(h.Get("tEsT"))
+	if h.Get("oops") == "" {
+		fmt.Println("Still correct!")
+	}
 }
