@@ -78,6 +78,19 @@ func (h Headers) Get(key string) string {
 	return h[strings.ToLower(key)]
 }
 
-func (h Headers) Set(key, value string) {
+func (h Headers) Set(key, value string) { //Overwrites the current headers if there are any
 	h[strings.ToLower(key)] = value
+}
+
+func (h Headers) Add(key, value string) { //Adds to current headers if they already exist
+	currentContents := h[strings.ToLower(key)]
+	if currentContents == "" {
+		h[strings.ToLower(key)] = value
+	} else {
+		h[strings.ToLower(key)] = currentContents + ", " + value
+	}
+}
+
+func (h Headers) Delete(key string) {
+	delete(h, strings.ToLower(key))
 }

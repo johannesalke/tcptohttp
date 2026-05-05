@@ -70,7 +70,8 @@ func (s *Server) handle(conn net.Conn) {
 		fmt.Println("Error getting request from connection:", err)
 	}
 	var buf bytes.Buffer
-	handlerError := s.Handler(&buf, req)
+	var w = &response.Writer{IOWriter: conn, WriterState: response.WritingStatusLine, BodyLength: 0}
+	handlerError := s.Handler(w, req)
 	if handlerError != nil {
 
 		err := writeError(conn, *handlerError)
@@ -107,17 +108,25 @@ func writeError(w io.Writer, handlerError HandlerError) error {
 	if err != nil {
 		return fmt.Errorf("Error writing error to connection: %s\n", err)
 	}
-	response.WriteHeaders(w, response.GetDefaultHeaders(len(handlerError.Message)))
+	defHeaders := response.GetDefaultHeaders(len(handlerError.Message))
+	if handlerError.ContentType != "" {
+		defHeaders.Set("Content-Type", handlerError.ContentType)
+	}
+	err = response.WriteHeaders(w, defHeaders)
+	if err != nil {
+		return fmt.Errorf("Error writing error headers to connection: %s\n", err)
+	}
 	w.Write([]byte(handlerError.Message))
 	return nil
 }
 
-type Handler func(w io.Writer, req *request.Request) *HandlerError
+type Handler func(w *response.Writer, req *request.Request) *HandlerError
 
 // The official http library type for reference:
 // type HandlerFunc func(w http.ResponseWriter, r *http.Request)
 
 type HandlerError struct {
-	StatusCode response.StatusCode
-	Message    string
+	StatusCode  response.StatusCode
+	ContentType string
+	Message     string
 }
