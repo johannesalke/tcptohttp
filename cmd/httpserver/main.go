@@ -103,7 +103,7 @@ func handler(w *response.Writer, req *request.Request) *server.HandlerError {
 			fmt.Print(err)
 		}
 		return nil
-	case target == "/video":
+	case strings.HasPrefix(target, "/video"):
 		err := w.WriteStatusLine(response.Success)
 		if err != nil {
 			fmt.Print(err)
@@ -119,7 +119,9 @@ func handler(w *response.Writer, req *request.Request) *server.HandlerError {
 		if err != nil {
 			fmt.Print(err)
 		}
-		fileBytes, err := os.ReadFile("assets/vim.mp4")
+		trgt := strings.TrimPrefix(target, "/video")
+		uri := "assets" + trgt + ".mp4"
+		fileBytes, err := os.ReadFile(uri)
 		if err != nil {
 			fmt.Print(err)
 		}
