@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	listener, err := net.Listen("tcp", ":42069")
+	listener, err := net.Listen("tcp", ":55555")
 	rr("Error setting up TCP listener: ", err)
 	defer listener.Close()
 	for {

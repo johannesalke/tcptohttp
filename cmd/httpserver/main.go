@@ -19,7 +19,7 @@ import (
 	"github.com/johannesalke/tcptohttp/internal/server"
 )
 
-const port = 42069
+const port = 55555
 
 func main() {
 	server, err := server.Serve(port, handler)
@@ -93,6 +93,54 @@ func handler(w *response.Writer, req *request.Request) *server.HandlerError {
 			fmt.Print(err)
 		}
 		checksum := sha256.Sum256(bodyBytes)
+
+		trailers := headers.NewHeaders()
+
+		trailers.Set("X-Content-SHA256", fmt.Sprintf("%x", checksum))
+		trailers.Set("X-Content-Length", fmt.Sprintf("%d", w.BodyLength))
+		err = w.WriteTrailers(trailers)
+		if err != nil {
+			fmt.Print(err)
+		}
+		return nil
+	case target == "/video":
+		err := w.WriteStatusLine(response.Success)
+		if err != nil {
+			fmt.Print(err)
+		}
+		hdrs := response.GetDefaultHeaders(len([]byte(successHtml)))
+		hdrs.Set("Content-Type", "video/mp4")
+		hdrs.Delete("Content-Length")
+		hdrs.Set("Transfer-Encoding", "chunked")
+		hdrs.Add("Trailer", "X-Content-SHA256")
+		hdrs.Add("Trailer", "X-Content-Length")
+
+		err = w.WriteHeaders(hdrs)
+		if err != nil {
+			fmt.Print(err)
+		}
+		fileBytes, err := os.ReadFile("assets/vim.mp4")
+		if err != nil {
+			fmt.Print(err)
+		}
+
+		//var chunkBuf = make([]byte, 256)
+		/*fileLines := bytes.Split(bodyBytes, []byte("\n"))
+		for _, line := range fileLines {
+			_, err = w.WriteChunkedBody(line)
+			if err != nil {
+				fmt.Print(err)
+			}
+		}*/
+		_, err = w.WriteChunkedBody(fileBytes)
+		if err != nil {
+			fmt.Print(err)
+		}
+		_, err = w.WriteChunkedBodyDone(true)
+		if err != nil {
+			fmt.Print(err)
+		}
+		checksum := sha256.Sum256(fileBytes)
 
 		trailers := headers.NewHeaders()
 

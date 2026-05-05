@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	addr, err := net.ResolveUDPAddr("udp", "localhost:42069")
+	addr, err := net.ResolveUDPAddr("udp", "localhost:55555")
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 	}
